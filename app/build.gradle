@@ -18,8 +18,6 @@ new File( 'VERSION.txt' ).eachLine { line ->
 	VERSION << extractInt(line)
 }
 
-println VERSION
-
 android {
     compileSdkVersion 26
     defaultConfig {
@@ -33,7 +31,8 @@ android {
         setProperty("archivesBaseName", "etlegacy-${getVersion}")
         externalNativeBuild {
             cmake {
-                arguments "-DCROSS_COMPILE32=OFF", "-DFEATURE_RENDERER_GLES=ON", "-DBUILD_SERVER=OFF", "-DINSTALL_EXTRA=OFF","-DARM=ON" , "-DCMAKE_BUILD_TYPE=Release", "-DBUNDLED_LIBS=OFF", "-DFEATURE_LUA=OFF", "-DFEATURE_OPENAL=OFF", "-DRENDERER_DYNAMIC=OFF", "-DFEATURE_FREETYPE=OFF", "-DFEATURE_THEORA=OFF", "-DFEATURE_SSL=OFF"
+                arguments "-DCROSS_COMPILE32=OFF", "-DFEATURE_RENDERER_GLES=ON", "-DBUILD_SERVER=OFF", "-DINSTALL_EXTRA=OFF","-DARM=ON" , "-DCMAKE_BUILD_TYPE=Release", "-DBUNDLED_LIBS=OFF", "-DBUNDLED_THEORA=OFF",
+                "-DBUNDLED_OPENAL=OFF", "-DBUNDLED_FREETYPE=OFF","-DFEATURE_LUA=OFF", "-DFEATURE_OPENAL=OFF", "-DRENDERER_DYNAMIC=OFF", "-DFEATURE_FREETYPE=OFF", "-DFEATURE_THEORA=OFF", "-DFEATURE_SSL=OFF"
                 //"-DANDROID_ARM_NEON=OFF"
             }
         }
@@ -77,6 +76,7 @@ android {
         externalNativeBuild {
             cmake {
                 path '../CMakeLists.txt'
+                //version "3.18.1"
             }
         }
 
@@ -109,3 +109,45 @@ dependencies {
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 }
+
+task downloadFiles(type: Download) {
+    src([
+        'https://github.com/libsdl-org/SDL/archive/release-2.0.20.tar.gz'
+    ])
+    dest "${buildDir}"
+    overwrite false
+}
+
+task extractArchives() {
+	dependsOn downloadFiles
+	fileTree("${buildDir}").matching {
+		include "*.tar.gz"
+	}.visit {
+		FileVisitDetails details -> exec {
+			commandLine ('tar', '-zxf', "${details.file.path}")
+			}
+	}
+}
+
+task ndkBuilds(type: Exec) {
+	dependsOn extractArchives
+	def ndkDir = android.ndkDirectory
+    executable = "$ndkDir/ndk-build"
+    args = ['NDK_PROJECT_PATH=build/intermediates/ndk',
+            'NDK_LIBS_OUT=src/main/jniLibs',
+            'APP_ABI := armeabi-v7a arm64-v8a',
+            'APP_PLATFORM=android-21',
+            'APP_BUILD_SCRIPT=SDL-release-2.0.20/Android.mk']
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(clean)) {
+        downloadFiles.enabled = false
+        extractArchives.enabled = false
+        ndkBuilds.enabled = false
+    }
+}
+
+//extractArchives.dependsOn downloadFiles
+//ndkBuilds.dependsOn extractArchives
+preBuild.dependsOn ndkBuilds
