@@ -329,6 +329,7 @@ vmCvar_t g_fixedphysicsfps;
 
 vmCvar_t g_pronedelay;
 
+vmCvar_t g_debugSpread;
 vmCvar_t g_debugHitboxes;
 vmCvar_t g_debugPlayerHitboxes;
 
@@ -648,6 +649,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_fixedphysicsfps,                 "g_fixedphysicsfps",                 "125",                        CVAR_ARCHIVE | CVAR_SERVERINFO,                  0, qfalse, qfalse },
 	{ &g_pronedelay,                      "g_pronedelay",                      "0",                          CVAR_ARCHIVE | CVAR_SERVERINFO,                  0, qfalse, qfalse },
 	// Debug
+	{ &g_debugSpread,                     "g_debugSpread",                     "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
 	{ &g_debugHitboxes,                   "g_debugHitboxes",                   "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
 	{ &g_debugPlayerHitboxes,             "g_debugPlayerHitboxes",             "0",                          0,                                               0, qfalse, qfalse },     // no need to make this CVAR_CHEAT
 	{ &g_debugForSingleClient,            "g_debugForSingleClient",            "-1",                         0,                                               0, qfalse, qfalse },     // no need to make this CVAR_CHEAT
