@@ -3026,6 +3026,21 @@ void PM_AdjustAimSpreadScale(void)
 	float increase, decrease;       // was losing lots of precision on slower weapons (scoped)
 	float cmdTime, wpnScale;
 
+	
+#ifdef GAMEDLL
+	if (g_debugPlayerHitboxes.integer & 1) 
+	{
+		if(g_debugForSingleClient == -1 || g_debugForSingleClient == pm->ps->clientNum)
+		{
+			qboolean debug = qtrue;
+			Com_Printf("%i ", pm->ps->clientNum);
+		}
+		
+	}
+#else
+	qboolean debug = qfalse;
+#endif
+
 	// all weapons are very inaccurate in zoomed mode
 	if (pm->ps->eFlags & EF_ZOOMING)
 	{
@@ -3076,6 +3091,8 @@ void PM_AdjustAimSpreadScale(void)
 			}
 		}
 
+		if (debug) Com_Printf("%f ", viewchange); // angle
+
 		viewchange  = viewchange / cmdTime;  // convert into this movement for a second
 		viewchange -= AIMSPREAD_VIEWRATE_MIN / wpnScale;
 		if (viewchange <= 0)
@@ -3116,6 +3133,8 @@ void PM_AdjustAimSpreadScale(void)
 	}
 
 	pm->ps->aimSpreadScale = (int)pm->ps->aimSpreadScaleFloat;  // update the int for the client
+
+	if (debug) Com_Printf("%f ", aimSpreadScaleFloat);
 }
 
 #define weaponstateFiring (pm->ps->weaponstate == WEAPON_FIRING /*|| pm->ps->weaponstate == WEAPON_FIRINGALT*/)
