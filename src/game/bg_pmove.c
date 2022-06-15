@@ -953,7 +953,7 @@ static qboolean PM_CheckProne(void)
 
 				pm->ps->eFlags |= EF_PRONE;
 				PM_StepSlideMove(qfalse);
-				PM_TraceAll(&trace, pm->ps->origin, pm->ps->origin);
+				PM_TraceAll(&trace, pm->ps->origin, trace.endpos);
 
 				if (trace.startsolid || trace.allsolid || trace.fraction != 1.f)
 				{
@@ -4546,9 +4546,9 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 				// adjust position by bumping
 				VectorSubtract(end, start, end);
 
-				end[0] *= traceres.plane.normal[0];
-				end[1] *= traceres.plane.normal[1];
-				end[2] *= traceres.plane.normal[2];
+				end[0] = Q_fabs(end[0]) * traceres.plane.normal[0];
+				end[1] = Q_fabs(end[1]) * traceres.plane.normal[1];
+				end[2] = Q_fabs(end[2]) * traceres.plane.normal[2];
 				VectorAdd(ps->origin, end, end);
 
 				// check the new position
@@ -4588,9 +4588,9 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 					// adjust position by bumping
 					VectorSubtract(end, start, end);
 
-					end[0] *= traceres.plane.normal[0];
-					end[1] *= traceres.plane.normal[1];
-					end[2] *= traceres.plane.normal[2];
+					end[0] = Q_fabs(end[0]) * traceres.plane.normal[0];
+					end[1] = Q_fabs(end[1]) * traceres.plane.normal[1];
+					end[2] = Q_fabs(end[2]) * traceres.plane.normal[2];
 					VectorAdd(ps->origin, end, end);
 
 					// check the new position
