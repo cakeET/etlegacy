@@ -1482,6 +1482,11 @@ void CL_SetCGameTime(void)
 		if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
 		{
 			cl.extrapolatedSnapshot = qtrue;
+
+			int a = cls.realtime + cl.serverTimeDelta;
+			int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
+			int missedby = a - b;
+			Com_Printf("%i EXTRAPOLATED %i >= %i, missed by: %i\n", cls.realtime, a, b, missedby);
 		}
 	}
 
@@ -1490,6 +1495,7 @@ void CL_SetCGameTime(void)
 	// make a huge adjustment
 	if (cl.newSnapshots)
 	{
+		Com_Printf("%i-SNAP ", cls.realtime); //temp
 		CL_AdjustTimeDelta();
 	}
 
