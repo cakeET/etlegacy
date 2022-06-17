@@ -1487,7 +1487,8 @@ void CL_SetCGameTime(void)
 			int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
 			int missedby = a - b;
 			//Com_Printf("%i EXTRAPOLATED %i >= %i, missed by: %i\n", cls.realtime, a, b, missedby);
-			Com_Printf("<%i> ", missedby);
+			//Com_Printf("<%i> ", missedby);
+			Com_Printf("%i %i\n", cls.frametime, missedby);
 		}
 	}
 
