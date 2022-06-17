@@ -1318,11 +1318,35 @@ void CL_AdjustTimeDelta(void)
 			}
 			else
 			{
-				// otherwise, move our sense of time forward to minimize total latency
-				cl.serverTimeDelta++;
-				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
+				// check if moving our sense of time forward would likely cause extrapolation
+				qboolean safe = false;
+
+				timeToSpare = (cls.realtime + cl.serverTimeDelta+1) 
+								- (cl.oldServerTime - cl_extrapolationMargin->integer);
+
+                if(timeToSpare < 0) timeToSpare * -1; // abs
+				printf("timeToSpare: %i ms\n",timeToSpare);
+			    
+				// increment if client frame time is a factor of spare time
+				if(timeToSpare % clientFrameTime == 0) safe = true;
+
+				// don't increment if within 1 client frametime of 0
+				if(timeToSpare < clientFrameTime) safe = false;
+
+				if(safe) {
+					// otherwise, move our sense of time forward to minimize total latency
+					cl.serverTimeDelta++;
+					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
+					
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "+1 ms";	
+				}
+				else
+				{
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";		
+				}
+
+
 				
-				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "+1 ms";
 			}
 		}
 		else
@@ -1479,7 +1503,6 @@ void CL_SetCGameTime(void)
 
 		// note if we are almost past the latest frame (without timeNudge),
 		// so we will try and adjust back a bit when the next snapshot arrives
-
 		int a = cls.realtime + cl.serverTimeDelta;
 		int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
 		int missedby = a - b;
@@ -1487,10 +1510,6 @@ void CL_SetCGameTime(void)
 		if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
 		{
 			cl.extrapolatedSnapshot = qtrue;
-
-			int a = cls.realtime + cl.serverTimeDelta;
-			int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
-			int missedby = a - b;
 			Com_Printf("E ");
 		}
 		else
