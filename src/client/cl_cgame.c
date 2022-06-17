@@ -1319,19 +1319,19 @@ void CL_AdjustTimeDelta(void)
 			else
 			{
 				// check if moving our sense of time forward would likely cause extrapolation
-				qboolean safe = false;
+				qboolean safe = qfalse;
 
-				timeToSpare = (cls.realtime + cl.serverTimeDelta+1) 
+				int timeToSpare = (cls.realtime + cl.serverTimeDelta+1) 
 								- (cl.oldServerTime - cl_extrapolationMargin->integer);
 
                 if(timeToSpare < 0) timeToSpare * -1; // abs
 				printf("timeToSpare: %i ms\n",timeToSpare);
 			    
 				// increment if client frame time is a factor of spare time
-				if(timeToSpare % clientFrameTime == 0) safe = true;
+				if(timeToSpare % cls.frametime == 0) safe = qtrue;
 
 				// don't increment if within 1 client frametime of 0
-				if(timeToSpare < clientFrameTime) safe = false;
+				if(timeToSpare < cls.frametime) safe = qfalse;
 
 				if(safe) {
 					// otherwise, move our sense of time forward to minimize total latency
