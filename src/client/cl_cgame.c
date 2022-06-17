@@ -1479,6 +1479,11 @@ void CL_SetCGameTime(void)
 
 		// note if we are almost past the latest frame (without timeNudge),
 		// so we will try and adjust back a bit when the next snapshot arrives
+
+		int a = cls.realtime + cl.serverTimeDelta;
+		int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
+		int missedby = a - b;
+
 		if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
 		{
 			cl.extrapolatedSnapshot = qtrue;
@@ -1486,10 +1491,13 @@ void CL_SetCGameTime(void)
 			int a = cls.realtime + cl.serverTimeDelta;
 			int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
 			int missedby = a - b;
-			//Com_Printf("%i EXTRAPOLATED %i >= %i, missed by: %i\n", cls.realtime, a, b, missedby);
-			//Com_Printf("<%i> ", missedby);
-			Com_Printf("%i %i\n", cls.frametime, missedby);
+			Com_Printf("E ");
 		}
+		else
+		{
+			Com_Printf("I ");
+		}
+		Com_Printf("%i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
 	}
 
 	// if we have gotten new snapshots, drift serverTimeDelta
