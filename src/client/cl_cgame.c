@@ -1329,7 +1329,7 @@ void CL_AdjustTimeDelta(void)
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
 					(cl.snap.serverTime) //server time
-					- (cls.realtime + cl.serverTimeDelta); //client time
+					- (cls.realtime + cl.serverTimeDelta + 1); //client time
 
 				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
 				Com_Printf("(%i mod %i = %i)\n", svFrameTime, cls.frametime, (svFrameTime % cls.frametime));
