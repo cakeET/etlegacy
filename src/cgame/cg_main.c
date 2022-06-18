@@ -828,13 +828,13 @@ void CG_UpdateCvars(void)
 				}
 				else if (cv->vmCvar == &int_cl_extrapolationMargin)
 				{
-					if (int_cl_extrapolationMargin.integer < -2)
+					if (int_cl_extrapolationMargin.integer < 0)
 					{
-						trap_Cvar_Set("cl_extrapolationMargin", "-2");
+						trap_Cvar_Set("cl_extrapolationMargin", "0");
 					}
-					else if (int_cl_extrapolationMargin.integer > 5)
+					else if (int_cl_extrapolationMargin.integer > 10)
 					{
-						trap_Cvar_Set("cl_extrapolationMargin", "5");
+						trap_Cvar_Set("cl_extrapolationMargin", "10");
 					}
 				}
 			}
