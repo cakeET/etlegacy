@@ -1328,12 +1328,13 @@ void CL_AdjustTimeDelta(void)
 
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
-					(cl.snap.serverTime) 
-					- (cls.realtime + cl.serverTimeDelta);
+					(cl.snap.serverTime) //server time
+					- (cls.realtime + cl.serverTimeDelta); //client time
+
 				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
 
-				int threshold = (svFrameTime - cl_extrapolationMargin->integer);
-				printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
+				int threshold = svFrameTime - (svFrameTime % cls.frametime);
+				Com_Printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
 
 				if( abs(spareTime) >= threshold || svFrameTime % cls.frametime == 0) {
 					// move our sense of time forward to minimize total latency
