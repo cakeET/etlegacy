@@ -1334,7 +1334,10 @@ void CL_AdjustTimeDelta(void)
 				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
 
 				int threshold = svFrameTime - (svFrameTime % cls.frametime);
-				Com_Printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
+				if (cl_showTimeDelta->integer & 1)
+				{
+					Com_Printf("^isvFrameTime: %i spareTime: %i threshold: %i^7    ",svFrameTime, spareTime, threshold);
+				}
 
 				if( abs(spareTime) >= threshold || svFrameTime % cls.frametime == 0) {
 					// move our sense of time forward to minimize total latency
