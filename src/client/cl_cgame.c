@@ -1329,7 +1329,7 @@ void CL_AdjustTimeDelta(void)
 				//how much spare time do we have if we were to roll time forward 1ms?
 				10 + 1 - 50     -40
 				int spareTime = (cls.realtime + cl.serverTimeDelta + 1) - (svTime - cl_extrapolationMargin->integer);
-				int threshold = (svFrameTime - cl_extrapolationMargin->integer);
+				int threshold = (svFrameTime - cl_extrapolationMargin->integer) - 1;
 				printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
 
 				if( abs(spareTime) >= threshold ) {
