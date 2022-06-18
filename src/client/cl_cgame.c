@@ -1311,41 +1311,38 @@ void CL_AdjustTimeDelta(void)
 			if (cl.extrapolatedSnapshot)
 			{
 				cl.extrapolatedSnapshot = qfalse;
-				cl.serverTimeDelta     -= 2;
+				cl.serverTimeDelta -= 2;
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
 				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "-2 ms";
 			}
 			else
 			{
-				// check if moving our sense of time forward would likely cause extrapolation
-				qboolean safe = qfalse;
+				int svTime = clsnapserverTime;
+				int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
+				svTime += svFrameTime;
+				//printf("svTime: %i\n",svTime);
 
-				int timeToSpare = (cls.realtime + cl.serverTimeDelta+1) 
-								- (cl.oldServerTime - cl_extrapolationMargin->integer);
+				// factors are always safe to roll forward
+				//if(svFrameTime % cls.frametime == 0) return true;
 
-                if(timeToSpare < 0) timeToSpare * -1; // abs
-				printf("timeToSpare: %i ms\n",timeToSpare);
-			    
-				// increment if client frame time is a factor of spare time
-				if(timeToSpare % cls.frametime == 0) safe = qtrue;
+				//how much spare time do we have if we were to roll time forward 1ms?
+				int spareTime = (cls.realtime + clserverTimeDelta + 1) - (svTime - cl_extrapolationMargin);
+				int threshold = (svFrameTime - cl_extrapolationMargin->integer) + cls.frametime;
+				printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
 
-				// don't increment if within 1 client frametime of 0
-				if(timeToSpare < cls.frametime) safe = qfalse;
-
-				if(safe) {
-					// otherwise, move our sense of time forward to minimize total latency
+				if( abs(spareTime) > threshold ) {
+					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
 					
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "+1 ms";	
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "+1 ms";
 				}
 				else
 				{
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";		
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";	
 				}
-
-
+				
 				
 			}
 		}
@@ -1466,7 +1463,7 @@ void CL_SetCGameTime(void)
 			Com_Error(ERR_DROP, "cl.snap.serverTime < cl.oldFrameServerTime");
 		}
 	}
-	cl.oldFrameServerTime = cl.snap.serverTime;
+	//cl.oldFrameServerTime = cl.snap.serverTime;
 
 
 	// get our current view of time
@@ -1527,6 +1524,9 @@ void CL_SetCGameTime(void)
 		//Com_Printf("%i-SNAP ", cls.realtime); //temp
 		CL_AdjustTimeDelta();
 	}
+
+	//moved down here so that cl.oldFrameServerTime will be available in CL_AdjustTimeDelta();
+	cl.oldFrameServerTime = cl.snap.serverTime;
 
 	if (clc.demo.playing)
 	{
