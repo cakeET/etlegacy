@@ -1318,7 +1318,7 @@ void CL_AdjustTimeDelta(void)
 			}
 			else
 			{
-				int svTime = clsnapserverTime;
+				int svTime = cl.snap.serverTime;
 				int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
 				svTime += svFrameTime;
 				//printf("svTime: %i\n",svTime);
@@ -1327,7 +1327,7 @@ void CL_AdjustTimeDelta(void)
 				//if(svFrameTime % cls.frametime == 0) return true;
 
 				//how much spare time do we have if we were to roll time forward 1ms?
-				int spareTime = (cls.realtime + clserverTimeDelta + 1) - (svTime - cl_extrapolationMargin);
+				int spareTime = (cls.realtime + cl.serverTimeDelta + 1) - (svTime - cl_extrapolationMargin->integer);
 				int threshold = (svFrameTime - cl_extrapolationMargin->integer) + cls.frametime;
 				printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
 
