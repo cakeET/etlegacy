@@ -1320,7 +1320,7 @@ void CL_AdjustTimeDelta(void)
 			{
 				int svTime = cl.snap.serverTime;
 				int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
-				svTime += svFrameTime;
+				//svTime += svFrameTime;
 				//printf("svTime: %i\n",svTime);
 
 				// factors are always safe to roll forward
