@@ -1331,7 +1331,7 @@ void CL_AdjustTimeDelta(void)
 				int threshold = (svFrameTime - cl_extrapolationMargin->integer) - 1; //magic 1
 				printf("svFrameTime: %i spareTime: %i threshold: %i\n",svFrameTime, spareTime, threshold);
 
-				if( abs(spareTime) >= threshold ) {
+				if( abs(spareTime) >= threshold || svFrameTime % cls.frametime == 0) {
 					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
