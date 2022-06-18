@@ -1332,11 +1332,11 @@ void CL_AdjustTimeDelta(void)
 					- (cls.realtime + cl.serverTimeDelta); //client time
 
 				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
-				Com_Printf("(svFrameTime mod cls.frametime = %i)\n", (svFrameTime % cls.frametime));
+				Com_Printf("(%i mod %i = %i)\n", svFrameTime, cls.frametime, (svFrameTime % cls.frametime));
 				int threshold = svFrameTime - (svFrameTime % cls.frametime);
 				if (cl_showTimeDelta->integer & 1)
 				{
-					Com_Printf("^isvFrameTime: %i spareTime: %i threshold: %i^7    ",svFrameTime, spareTime, threshold);
+					Com_Printf("^ispareTime: %i threshold: %i^7    ", spareTime, threshold);
 				}
 
 				if( abs(spareTime) >= threshold || svFrameTime % cls.frametime == 0) {
