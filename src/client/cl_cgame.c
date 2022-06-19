@@ -1318,6 +1318,7 @@ void CL_AdjustTimeDelta(void)
 			}
 			else
 			{
+				int threshold;
 				int svTime = cl.snap.serverTime;
 				int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
 				//svTime += svFrameTime;
@@ -1333,13 +1334,33 @@ void CL_AdjustTimeDelta(void)
 
 				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
 				Com_Printf("(%i mod %i = %i)\n", svFrameTime, cls.frametime, (svFrameTime % cls.frametime));
-				int threshold = svFrameTime - (svFrameTime % cls.frametime);
-				if (cl_showTimeDelta->integer & 1)
+
+				//calculate threshold for advancing time using modulo
+				if (svFrameTime > cls.frametime)
 				{
-					Com_Printf("^ispareTime: %i threshold: %i^7    ", spareTime, threshold);
+					threshold -= svFrameTime - (svFrameTime % cls.frametime);
+				}
+				else
+				{
+					threshold -= svFrameTime - (cls.frametime % svFrameTime);
+					if (cl_showTimeDelta->integer & 1) Com_Printf("MODFLIP ");
 				}
 
-				if( abs(spareTime) >= threshold || svFrameTime % cls.frametime == 0) {
+				//ensure we have at least 1 frame worth of spare time
+				if (threshold < cls.frametime) 
+				{
+					threshold = cls.frametime;
+					if (cl_showTimeDelta->integer & 1) Com_Printf("MINTHRESH ");
+				}
+
+				if (cl_showTimeDelta->integer & 1)
+				{
+					Com_Printf("^isvFrameTime: %i cls.frametime %i spareTime: %i threshold: %i^7  ", 
+						svFrameTime, cls.frametime, spareTime, threshold);
+				}
+
+				if( spareTime >= threshold ) //|| svFrameTime % cls.frametime == 0)
+				{
 					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
