@@ -1345,12 +1345,12 @@ void CL_AdjustTimeDelta(void)
 				//calculate threshold for advancing time using modulo
 				if (svFrameTime > cls.frametime)
 				{
-					threshold -= (svFrameTime % cls.frametime) / 2;
+					threshold -= ( (svFrameTime % cls.frametime) + (2 -1) ) / 2; //rounds up
 					if (cl_showTimeDelta->integer & 1) Com_Printf("MODNORM ");
 				}
 				else
 				{
-					threshold -= (cls.frametime % svFrameTime) / 2;
+					threshold -= ( (cls.frametime % svFrameTime) + (2 -1) ) / 2; //rounds up
 					if (cl_showTimeDelta->integer & 1) Com_Printf("MODFLIP ");
 				}
 
