@@ -1340,17 +1340,17 @@ void CL_AdjustTimeDelta(void)
 				//(this turns out to only be true for client frame times that are
 				//a factor of the server frame time but it is still the starting
 				//point for applying a correction)
-				threshold = svFrameTime;
+				threshold = svFrameTime - 1;
 
 				//calculate threshold for advancing time using modulo
 				if (svFrameTime > cls.frametime)
 				{
-					threshold -= ( (svFrameTime % cls.frametime) + (2 -1) ) / 2; //rounds up
+					threshold -= ( (svFrameTime % cls.frametime) + (2 - 1) ) / 2; //rounds up
 					if (cl_showTimeDelta->integer & 1) Com_Printf("MODNORM ");
 				}
 				else
 				{
-					threshold -= ( (cls.frametime % svFrameTime) + (2 -1) ) / 2; //rounds up
+					threshold -= ( (cls.frametime % svFrameTime) + (2 - 1) ) / 2; //rounds up
 					if (cl_showTimeDelta->integer & 1) Com_Printf("MODFLIP ");
 				}
 
