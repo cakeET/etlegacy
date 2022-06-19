@@ -1335,16 +1335,26 @@ void CL_AdjustTimeDelta(void)
 				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
 				Com_Printf("(%i mod %i = %i)\n", svFrameTime, cls.frametime, (svFrameTime % cls.frametime));
 
+
+				//ideally we need one server frame worth of data to avoid extrap
+				//(this turns out to only be true for client frame times that are
+				//a factor of the server frame time but it is still the starting
+				//point for applying a correction)
+				threshold = svFrameTime;
+
 				//calculate threshold for advancing time using modulo
 				if (svFrameTime > cls.frametime)
 				{
-					threshold -= svFrameTime - (svFrameTime % cls.frametime);
+					threshold -= (svFrameTime % cls.frametime);
 				}
 				else
 				{
-					threshold -= svFrameTime - (cls.frametime % svFrameTime);
+					threshold -= (cls.frametime % svFrameTime);
 					if (cl_showTimeDelta->integer & 1) Com_Printf("MODFLIP ");
 				}
+
+				Com_Printf("^isvFrameTime: %i cls.frametime %i spareTime: %i threshold: %i^7\n", 
+						svFrameTime, cls.frametime, spareTime, threshold);
 
 				//ensure we have at least 1 frame worth of spare time
 				if (threshold < cls.frametime) 
@@ -1355,7 +1365,7 @@ void CL_AdjustTimeDelta(void)
 
 				if (cl_showTimeDelta->integer & 1)
 				{
-					Com_Printf("^isvFrameTime: %i cls.frametime %i spareTime: %i threshold: %i^7  ", 
+					Com_Printf("^isvFrameTime: %i cls.frametime %i spareTime: %i threshold: %i^7\n", 
 						svFrameTime, cls.frametime, spareTime, threshold);
 				}
 
