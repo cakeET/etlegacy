@@ -1370,7 +1370,7 @@ void CL_AdjustTimeDelta(void)
 						svFrameTime, cls.frametime, spareTime, threshold);
 				}
 
-				if( spareTime >= threshold ) //|| svFrameTime % cls.frametime == 0)
+				if( spareTime >= threshold || svFrameTime % cls.frametime == 0)
 				{
 					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
