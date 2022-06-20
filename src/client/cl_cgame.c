@@ -1258,7 +1258,7 @@ int clFrameTime;
 void CL_FindIncrementThreshold()
 {
 	clFrameTime = cls.frametime;
-	com_Printf("svFrameTime: %i", svFrameTime);
+	Com_Printf("svFrameTime: %i", svFrameTime);
 
 	if (clFrameTime % svFrameTime == 0) // || svFrameTime == clFrameTime
 	{
