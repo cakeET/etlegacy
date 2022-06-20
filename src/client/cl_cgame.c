@@ -1378,7 +1378,7 @@ void CL_AdjustTimeDelta(void)
 			{
 				// find threshold if never set or client/server frametime has changed
 				if (threshold == -1 || svFrameTime != cl.snap.serverTime - cl.oldFrameServerTime) {
-					svFrameTime == cl.snap.serverTime - cl.oldFrameServerTime;
+					svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
 					CL_FindIncrementThreshold();
 					Com_Printf("(%i ^1svNew^7 ", threshold);
 
