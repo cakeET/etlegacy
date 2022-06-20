@@ -1248,10 +1248,6 @@ void CL_CGameRendering()
 }
 
 
-int threshold;
-int svTime = cl.snap.serverTime;
-int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
-
 int threshold = -1;
 int svFrameTime;
 int clFrameTime;
