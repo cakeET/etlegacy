@@ -1259,14 +1259,24 @@ void CL_FindIncrementThreshold()
 {
 	clFrameTime = cls.frametime;
 
-	if (svFrameTime <= clFrameTime)
+	if (clFrameTime % svFrameTime == 0) // || svFrameTime == clFrameTime
 	{
-        // there is a new snap whenever the client comes up for air
+        // there is a enough new data whenever the client comes up for air
         // (consider adding cvar to add an optional spare server frame)
 		threshold = 0;
-		printf("SV<=CL");
+		Com_Printf("SV==CL");
 		return;
 	}
+
+	if (svFrameTime < clFrameTime) // slow client on fast server
+	{
+		//sit about one server frame behind
+		threshold = svFrameTime - (clFrameTime % svFrameTime);
+		//threshold = (clFrameTime % svFrameTime) + 1;
+		Com_Printf("SV<CL ");
+		return;
+	}
+
 
     // calculate the least common muliple
     int LCM = svFrameTime;
@@ -1285,23 +1295,23 @@ void CL_FindIncrementThreshold()
 	{
 		if(LCM % threshold == clFrameTime)
 		{
-		    printf("SEARCH");
+		    Com_Printf("SEARCH");
 			return;
 		}
 		--threshold;
 
 	} while (threshold > 0);
 
-    //sometimes need special handling when clFrameTime is factor of svFrameTime
+    //sometimes this special case when clFrameTime is factor of svFrameTime
 	if (svFrameTime % clFrameTime == 0)
     {
 		threshold = svFrameTime - clFrameTime;
-		printf("MOD=0 ");
+		Com_Printf("MOD=0 ");
 		return;
 	}
 
     // otherwise just need a full client frame
-    printf("LAST  ");
+    Com_Printf("LAST  ");
     threshold = clFrameTime;
 }
 
