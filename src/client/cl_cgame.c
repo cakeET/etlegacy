@@ -1271,7 +1271,7 @@ void CL_FindIncrementThreshold()
 	if (svFrameTime < clFrameTime) // slow client on fast server
 	{
 		//sit about one server frame behind
-		threshold = svFrameTime - (clFrameTime % svFrameTime);
+		threshold = svFrameTime - (clFrameTime % svFrameTime) - 1;
 		//threshold = (clFrameTime % svFrameTime) + 1;
 		Com_Printf("SV<CL ");
 		return;
@@ -1382,7 +1382,7 @@ void CL_AdjustTimeDelta(void)
 				cl.serverTimeDelta -= 2;
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
-				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "-2 ms";
+				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1-2 ms^7";
 			}
 			else
 			{
@@ -1411,7 +1411,7 @@ void CL_AdjustTimeDelta(void)
 					cl.serverTimeDelta++;
 					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "+1 ms";
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3+1 ms^7";
 				}
 				else
 				{
