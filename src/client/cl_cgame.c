@@ -1572,13 +1572,19 @@ void CL_SetCGameTime(void)
 		if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
 		{
 			cl.extrapolatedSnapshot = qtrue;
-			Com_Printf("E ");
+			if (missedby == 0)
+			{
+				Com_Printf("^3E %i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
+			}
+			else
+			{
+				Com_Printf("^1E %i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
+			}
 		}
 		else
 		{
-			Com_Printf("I ");
-		}
-		Com_Printf("%i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
+			Com_Printf("I %i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
+		}		
 	}
 
 	// if we have gotten new snapshots, drift serverTimeDelta
