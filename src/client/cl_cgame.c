@@ -1380,12 +1380,15 @@ void CL_AdjustTimeDelta(void)
 				if (threshold == -1 || svFrameTime != cl.snap.serverTime - cl.oldFrameServerTime) {
 					svFrameTime == cl.snap.serverTime - cl.oldFrameServerTime;
 					CL_FindIncrementThreshold();
+					Com_Printf("^1new ^7");
 
 				}
 				else if (clFrameTime != cls.frametime)
 				{
 					CL_FindIncrementThreshold();
+					Com_Printf("^1new ^7");
 				}
+				Com_Printf("^threshold: %i", threshold);
 				
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
