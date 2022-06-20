@@ -1247,6 +1247,68 @@ void CL_CGameRendering()
 	VM_Debug(0);
 }
 
+
+int threshold;
+int svTime = cl.snap.serverTime;
+int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
+
+int threshold = -1;
+int svFrameTime;
+int clFrameTime;
+
+/**
+ * @brief CL_FindIncrementThreshold
+ */
+void CL_FindIncrementThreshold()
+{
+	clFrameTime = cls.frametime;
+
+	if (svFrameTime <= clFrameTime)
+	{
+        // there is a new snap whenever the client comes up for air
+        // (consider adding cvar to add an optional spare server frame)
+		threshold = 0;
+		//printf("SV<=CL");
+		return;
+	}
+
+    // calculate the least common muliple
+    int LCM = svFrameTime;
+    while (1)
+    {
+        if (LCM % clFrameTime == 0 && LCM % svFrameTime == 0) 
+        {
+            break;
+        }
+        ++LCM;
+    }
+
+    // loop down through possible thresholds to check for viability
+	threshold = svFrameTime - 1;
+	do
+	{
+		if(LCM % threshold == clFrameTime)
+		{
+		    //printf("SEARCH");
+			return;
+		}
+		--threshold;
+
+	} while (threshold > 0);
+
+    //sometimes need special handling when clFrameTime is factor of svFrameTime
+	if (svFrameTime % clFrameTime == 0)
+    {
+		threshold = svFrameTime - clFrameTime;
+		//printf("MOD=0.");
+		return;
+	}
+
+    // otherwise just need a full client frame
+    //printf("LAST..");
+    threshold = clFrameTime;
+}
+
 #define RESET_TIME  500
 
 /**
@@ -1318,64 +1380,28 @@ void CL_AdjustTimeDelta(void)
 			}
 			else
 			{
-				int threshold;
-				int svTime = cl.snap.serverTime;
-				int svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
-				//svTime += svFrameTime;
-				//printf("svTime: %i\n",svTime);
+				// find threshold if never set or client/server frametime has changed
+				if (threshold == -1 || svFrameTime != cl.snap.serverTime - cl.oldFrameServerTime) {
+					svFrameTime == cl.snap.serverTime - cl.oldFrameServerTime;
+					CL_FindIncrementThreshold();
 
-				// factors are always safe to roll forward
-				//if(svFrameTime % cls.frametime == 0) return true;
-
+				}
+				else if (clFrameTime != cls.frametime)
+				{
+					CL_FindIncrementThreshold();
+				}
+				
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
 					(cl.snap.serverTime) //server time
 					- (cls.realtime + cl.serverTimeDelta + 1); //client time
 
-				//int spareTime = (cls.realtime + cl.serverTimeDelta) - (svTime);
-				Com_Printf("(%i mod %i = %i)\n", svFrameTime, cls.frametime, (svFrameTime % cls.frametime));
-
-
-				//ideally we need one server frame worth of data to avoid extrap
-				//(this turns out to only be true for client frame times that are
-				//a factor of the server frame time but it is still the starting
-				//point for applying a correction)
-				threshold = svFrameTime - 1;
-
-				//calculate threshold for advancing time using modulo
-				if (svFrameTime > cls.frametime)
-				{
-					threshold -= ( (svFrameTime % cls.frametime) + (2 - 1) ) / 2; //rounds up
-					if (cl_showTimeDelta->integer & 1) Com_Printf("MODNORM ");
-				}
-				else
-				{
-					threshold -= ( (cls.frametime % svFrameTime) + (2 - 1) ) / 2; //rounds up
-					if (cl_showTimeDelta->integer & 1) Com_Printf("MODFLIP ");
-				}
-
-				Com_Printf("^isvFrameTime: %i cls.frametime %i spareTime: %i threshold: %i^7\n", 
-						svFrameTime, cls.frametime, spareTime, threshold);
-
-				//ensure we have at least 1 frame worth of spare time
-				if (threshold < cls.frametime) 
-				{
-					threshold = cls.frametime;
-					if (cl_showTimeDelta->integer & 1) Com_Printf("MINTHRESH ");
-				}
-
-				if (cl_showTimeDelta->integer & 1)
-				{
-					Com_Printf("^isvFrameTime: %i cls.frametime %i spareTime: %i threshold: %i^7\n", 
-						svFrameTime, cls.frametime, spareTime, threshold);
-				}
-
-				if( spareTime >= threshold || svFrameTime % cls.frametime == 0)
+				if( spareTime >= threshold)
 				{
 					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
+					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
-					
 					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "+1 ms";
 				}
 				else
