@@ -1390,8 +1390,8 @@ void CL_AdjustTimeDelta(void)
 				// find threshold if never set or client/server frametime has changed
 
 				// new interval
-				int curr = cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK];
-				int prev = cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK];
+				int curr = cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime;
+				int prev = cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime;
 				int interval = curr - prev;
 				Com_Printf("interval new: %i", interval);
 
