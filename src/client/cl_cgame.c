@@ -1398,8 +1398,8 @@ void CL_AdjustTimeDelta(void)
 				int interval2 = cl.snap.serverTime - cl.oldFrameServerTime;
 				Com_Printf("interval old: %i", interval2);
 
-				if (threshold == -1 || svFrameTime != cl.snap.serverTime - cl.oldFrameServerTime) {
-					svFrameTime = cl.snap.serverTime - cl.oldFrameServerTime;
+				if (threshold == -1 || svFrameTime != interval) {
+					svFrameTime = interval;
 					CL_FindIncrementThreshold();
 					Com_Printf("%i ^1svNew^7 ", threshold);
 
