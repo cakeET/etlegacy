@@ -1264,7 +1264,7 @@ void CL_FindIncrementThreshold()
         // there is a new snap whenever the client comes up for air
         // (consider adding cvar to add an optional spare server frame)
 		threshold = 0;
-		//printf("SV<=CL");
+		printf("SV<=CL");
 		return;
 	}
 
@@ -1285,7 +1285,7 @@ void CL_FindIncrementThreshold()
 	{
 		if(LCM % threshold == clFrameTime)
 		{
-		    //printf("SEARCH");
+		    printf("SEARCH");
 			return;
 		}
 		--threshold;
@@ -1296,12 +1296,12 @@ void CL_FindIncrementThreshold()
 	if (svFrameTime % clFrameTime == 0)
     {
 		threshold = svFrameTime - clFrameTime;
-		//printf("MOD=0.");
+		printf("MOD=0 ");
 		return;
 	}
 
     // otherwise just need a full client frame
-    //printf("LAST..");
+    printf("LAST  ");
     threshold = clFrameTime;
 }
 
@@ -1380,15 +1380,15 @@ void CL_AdjustTimeDelta(void)
 				if (threshold == -1 || svFrameTime != cl.snap.serverTime - cl.oldFrameServerTime) {
 					svFrameTime == cl.snap.serverTime - cl.oldFrameServerTime;
 					CL_FindIncrementThreshold();
-					Com_Printf("^1new ^7");
+					Com_Printf("^1new^7 ");
 
 				}
 				else if (clFrameTime != cls.frametime)
 				{
 					CL_FindIncrementThreshold();
-					Com_Printf("^1new ^7");
+					Com_Printf("^1new^7 ");
 				}
-				Com_Printf("^threshold: %i", threshold);
+				Com_Printf("threshold: %i", threshold);
 				
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
