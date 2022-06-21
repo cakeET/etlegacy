@@ -1592,12 +1592,10 @@ void CL_SetCGameTime(void)
 		//	    (cl.snap.serverTime - cl_extrapolationMargin->integer)
 
 		int spareTime =
-			cl.snap.serverTime                    //server
-			- (cls.realtime + cl.serverTimeDelta) //client
-			- cl_extrapolationMargin->integer;    //margin
-
+			cl.snap.serverTime                     //server
+			- (cls.realtime + cl.serverTimeDelta); //client
 		//if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
-		if (spareTime <= 0)
+		if (spareTime <= cl_extrapolationMargin->integer)
 		{
 			cl.extrapolatedSnapshot = qtrue;
 		}
@@ -1620,7 +1618,7 @@ void CL_SetCGameTime(void)
 				Com_Printf("^1"); // exceeded margin (red)
 			}
 
-			Com_Printf("%i ", spareTime);
+			Com_Printf("%+2i ", spareTime);
 		}	
 	}
 
