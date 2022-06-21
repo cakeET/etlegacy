@@ -1260,25 +1260,37 @@ void CL_FindIncrementThreshold()
 	clFrameTime = cls.frametime;
 	//Com_Printf("svFrameTime: %i ", svFrameTime);
 
-	if (clFrameTime % svFrameTime == 0) // || svFrameTime == clFrameTime
+	if (clFrameTime == svFrameTime) // || clFrameTime % svFrameTime == 0
 	{
         // there is a enough new data whenever the client comes up for air
-        // (consider adding cvar to add an optional spare server frame)
 		threshold = 0;
-		Com_Printf("SV==CL");
+		
+		if (cl_showTimeDelta->integer & 4) 
+		{
+			Com_Printf("(clFrameTime == svFrameTime | threshold = 0");
+		}
+
 		return;
 	}
 
-	if (svFrameTime < clFrameTime) // slow client on fast server
+	if (svFrameTime < clFrameTime)
 	{
+		// slow client on fast server (eg. sv_fps 40, com_maxFPS 30)
+		// this doesn't handle all edge cases but works well enough
 		threshold = (clFrameTime % svFrameTime);
 		int alt = svFrameTime - threshold;
 		threshold = threshold > alt ? threshold : alt;
-		Com_Printf("SV<CL ");
+		
+		if (cl_showTimeDelta->integer & 4)
+		{
+			Com_Printf("(svFrameTime < clFrameTime | threshold = %i", threshold);
+		}
+
 		return;
 	}
 
-    // calculate the least common muliple
+    // calculate the least common muliple of clFrameTime and svFrameTime
+    // the LCM is how long until the spare time pattern repeats
     int LCM = svFrameTime;
     while (1)
     {
@@ -1293,26 +1305,40 @@ void CL_FindIncrementThreshold()
 	threshold = svFrameTime - 1;
 	do
 	{
+		// to avoid running out of spare time we want a threshold
+		// that will periodically synchronize with clFrameTime
 		if(LCM % threshold == clFrameTime)
 		{
-		    Com_Printf("SEARCH");
+	   		if (cl_showTimeDelta->integer & 4)
+			{
+				Com_Printf("(LCM %% threshold == clFrameTime | threshold = %i", threshold);
+			}
+
 			return;
 		}
 		--threshold;
 
 	} while (threshold > 0);
 
-    //sometimes this special case when clFrameTime is factor of svFrameTime
+    // sometimes search misses when clFrameTime is factor of svFrameTime
 	if (svFrameTime % clFrameTime == 0)
     {
 		threshold = svFrameTime - clFrameTime;
-		Com_Printf("MOD=0 ");
+
+   		if (cl_showTimeDelta->integer & 4)
+		{
+			Com_Printf("(svFrameTime %% clFrameTime == 0 | threshold = %i", threshold);
+		}
 		return;
 	}
 
-    // otherwise just need a full client frame
-    Com_Printf("LAST  ");
-    threshold = clFrameTime;
+    // otherwise, we just need a full client frame
+	threshold = clFrameTime;
+
+	if (cl_showTimeDelta->integer & 4)
+	{
+		Com_Printf("(clFrameTime | threshold = %i", threshold);
+	}
 }
 
 #define RESET_TIME  500
