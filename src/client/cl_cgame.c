@@ -1267,7 +1267,7 @@ void CL_FindIncrementThreshold()
 		
 		if (cl_showTimeDelta->integer & 4) 
 		{
-			Com_Printf("(clFrameTime == svFrameTime | threshold = 0");
+			Com_Printf("(clFrameTime == svFrameTime | threshold = 0) ");
 		}
 
 		return;
@@ -1283,7 +1283,7 @@ void CL_FindIncrementThreshold()
 		
 		if (cl_showTimeDelta->integer & 4)
 		{
-			Com_Printf("(svFrameTime < clFrameTime | threshold = %i", threshold);
+			Com_Printf("(svFrameTime < clFrameTime | threshold = %i) ", threshold);
 		}
 
 		return;
@@ -1311,7 +1311,7 @@ void CL_FindIncrementThreshold()
 		{
 	   		if (cl_showTimeDelta->integer & 4)
 			{
-				Com_Printf("(LCM %% threshold == clFrameTime | threshold = %i", threshold);
+				Com_Printf("(LCM %% threshold == clFrameTime | threshold = %i) ", threshold);
 			}
 
 			return;
@@ -1327,7 +1327,7 @@ void CL_FindIncrementThreshold()
 
    		if (cl_showTimeDelta->integer & 4)
 		{
-			Com_Printf("(svFrameTime %% clFrameTime == 0 | threshold = %i", threshold);
+			Com_Printf("(svFrameTime %% clFrameTime == 0 | threshold = %i) ", threshold);
 		}
 		return;
 	}
@@ -1337,7 +1337,7 @@ void CL_FindIncrementThreshold()
 
 	if (cl_showTimeDelta->integer & 4)
 	{
-		Com_Printf("(clFrameTime | threshold = %i", threshold);
+		Com_Printf("(clFrameTime | threshold = %i) ", threshold);
 	}
 }
 
@@ -1382,14 +1382,14 @@ void CL_AdjustTimeDelta(void)
 		cl.oldServerTime   = cl.snap.serverTime; // FIXME: is this a problem for cgame?
 		cl.serverTime      = cl.snap.serverTime;
 
-		if (cl_showTimeDelta->integer) adjustmentMessage = "^5(TARE";
+		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^5(TARE";
 	}
 	else if (deltaDelta > 100)
 	{
 		// fast adjust, cut the difference in half
 		cl.serverTimeDelta = (cl.serverTimeDelta + newDelta) >> 1;
 
-		if (cl_showTimeDelta->integer) adjustmentMessage = "^5(HALF";
+		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^5(HALF";
 	}
 	else
 	{
@@ -1406,7 +1406,7 @@ void CL_AdjustTimeDelta(void)
 				cl.serverTimeDelta -= 2;
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
-				if (cl_showTimeDelta->integer) adjustmentMessage = "^1(Δ -2";
+				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1(Δ -2";
 			}
 			else
 			{
@@ -1447,21 +1447,21 @@ void CL_AdjustTimeDelta(void)
 					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
 					
-					if (cl_showTimeDelta->integer) adjustmentMessage = "^4(Δ +1";
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^4(Δ +1";
 				}
 				else
 				{
-					if (cl_showTimeDelta->integer) adjustmentMessage = "^3(NO Δ";
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3(NO Δ";
 				}
 			}
 		}
 		else
 		{
-			if (cl_showTimeDelta->integer) adjustmentMessage = "^3(DISABLED";
+			if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3(DISABLED";
 		}
 	}
 
-	if (cl_showTimeDelta->integer)
+	if (cl_showTimeDelta->integer & 1)
 	{
 		int drift = cl.serverTimeDelta - cl.baselineDelta; // negative drift is expected
 		Com_Printf("%s | %i %i %i) ", adjustmentMessage, drift, deltaDelta, cl.serverTimeDelta);
@@ -1504,7 +1504,7 @@ void CL_FirstSnapshot(void)
 	}
 #endif
 
-	if (cl_showTimeDelta->integer)
+	if (cl_showTimeDelta->integer & 1)
 	{
 		Com_Printf("^2(FIRST SNAPSHOT | serverTimeDelta = %i)\n", cl.serverTimeDelta);
 	}
@@ -1623,10 +1623,13 @@ void CL_SetCGameTime(void)
 			cl.extrapolatedSnapshot = qtrue;
 		}
 
-		if(cl_showTimeDelta->integer) {
+		if(cl_showTimeDelta->integer & 1) {
 			if (spareTime > cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^7"); // extra time to spare (white)
+				if(!(cl_showTimeDelta->integer & 8))
+				{
+					Com_Printf("^7"); // extra time to spare (white)
+				}
 			} 
 			else if (spareTime == cl_extrapolationMargin->integer)
 			{
@@ -1639,9 +1642,12 @@ void CL_SetCGameTime(void)
 			else
 			{
 				Com_Printf("^1"); // margin exhausted (red)
-			}
+			}	
 
-			Com_Printf("%+03i ", spareTime);
+			if(!(cl_showTimeDelta->integer & 8))
+			{
+				Com_Printf("%+03i ", spareTime);
+			}
 		}	
 	}
 
