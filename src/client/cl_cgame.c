@@ -1437,6 +1437,7 @@ void CL_AdjustTimeDelta(void)
 
 	if (cl_showTimeDelta->integer)
 	{
+		int drift = cl.serverTimeDelta - cl.baselineDelta; // negative drift is expected
 		Com_Printf("%s | %i %i %i)\n", adjustmentMessage, drift, deltaDelta, cl.serverTimeDelta);
 	}
 }
@@ -1600,7 +1601,7 @@ void CL_SetCGameTime(void)
 			} 
 			else if (spareTime == cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^2"); // right on time (green)
+				Com_Printf("^2"); // exactly on time (green)
 			}
 			else if (spareTime >= 0)
 			{
