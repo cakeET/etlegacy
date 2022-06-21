@@ -1618,7 +1618,7 @@ void CL_SetCGameTime(void)
 				Com_Printf("^1"); // exceeded margin (red)
 			}
 
-			Com_Printf("%+2i ", spareTime);
+			Com_Printf("%+3i ", spareTime);
 		}	
 	}
 
