@@ -1358,6 +1358,7 @@ void CL_AdjustTimeDelta(void)
 
 		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1RESET^7 (deltaDelta > RESET_TIME)";
 		if (cl_showTimeDelta->integer & 2) Com_Printf("<RESET> ");
+		if (cl_showTimeDelta->integer & 4) Com_Printf("^1(TARE)\n");
 	}
 	else if (deltaDelta > 100)
 	{
@@ -1366,6 +1367,7 @@ void CL_AdjustTimeDelta(void)
 
 		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3FAST ADJUST^7 (deltaDelta > 100)";
 		if (cl_showTimeDelta->integer & 2) Com_Printf("<FAST> ");
+		if (cl_showTimeDelta->integer & 4) Com_Printf("^1(HALF)\n");
 	}
 	else
 	{
@@ -1383,6 +1385,7 @@ void CL_AdjustTimeDelta(void)
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
 				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1-2 ms^7";
+				if (cl_showTimeDelta->integer & 4) Com_Printf("^1(Δ -2)\n");
 			}
 			else
 			{
@@ -1423,10 +1426,12 @@ void CL_AdjustTimeDelta(void)
 					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
 					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3+1 ms^7";
+					if (cl_showTimeDelta->integer & 4) Com_Printf("^2(Δ +1)\n");
 				}
 				else
 				{
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";	
+					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";
+					if (cl_showTimeDelta->integer & 4) Com_Printf("^3(NO Δ)\n");
 				}
 			}
 		}
@@ -1463,6 +1468,7 @@ void CL_FirstSnapshot(void)
 	cl.baselineDelta = cl.serverTimeDelta = cl.snap.serverTime - cls.realtime;
 	if (cl_showTimeDelta->integer & 1) Com_Printf("^2FIRST SNAPSHOT^7 (serverTimeDelta = % i)\n", cl.serverTimeDelta);
 	if (cl_showTimeDelta->integer & 2) Com_Printf("<SETUP> ");
+	if (cl_showTimeDelta->integer & 4) Com_Printf("^2(TARE)\n");
 
 	cl.oldServerTime   = cl.snap.serverTime;
 
@@ -1618,7 +1624,7 @@ void CL_SetCGameTime(void)
 				Com_Printf("^1"); // exceeded margin (red)
 			}
 
-			Com_Printf("%+3i ", spareTime);
+			Com_Printf("%+03i ", spareTime);
 		}	
 	}
 
