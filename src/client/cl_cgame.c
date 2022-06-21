@@ -1356,18 +1356,14 @@ void CL_AdjustTimeDelta(void)
 		cl.oldServerTime   = cl.snap.serverTime; // FIXME: is this a problem for cgame?
 		cl.serverTime      = cl.snap.serverTime;
 
-		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1RESET^7 (deltaDelta > RESET_TIME)";
-		if (cl_showTimeDelta->integer & 2) Com_Printf("<RESET> ");
-		if (cl_showTimeDelta->integer & 4) Com_Printf("^4(TARE | %i)\n", cl.serverTimeDelta);
+		if (cl_showTimeDelta->integer) adjustmentMessage = "^4(TARE";
 	}
 	else if (deltaDelta > 100)
 	{
 		// fast adjust, cut the difference in half
 		cl.serverTimeDelta = (cl.serverTimeDelta + newDelta) >> 1;
 
-		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3FAST ADJUST^7 (deltaDelta > 100)";
-		if (cl_showTimeDelta->integer & 2) Com_Printf("<FAST> ");
-		if (cl_showTimeDelta->integer & 4) Com_Printf("^4(HALF | %i)\n", cl.serverTimeDelta);
+		if (cl_showTimeDelta->integer) adjustmentMessage = "^4(HALF";
 	}
 	else
 	{
@@ -1384,8 +1380,7 @@ void CL_AdjustTimeDelta(void)
 				cl.serverTimeDelta -= 2;
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
-				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1-2 ms^7";
-				if (cl_showTimeDelta->integer & 4) Com_Printf("^1(Δ -2 | %i)\n", cl.serverTimeDelta);
+				if (cl_showTimeDelta->integer) adjustmentMessage = "^1(Δ -2";
 			}
 			else
 			{
@@ -1403,13 +1398,13 @@ void CL_AdjustTimeDelta(void)
 				if (threshold == -1 || svFrameTime != interval) {
 					svFrameTime = interval;
 					CL_FindIncrementThreshold();
-					Com_Printf("%i ^1svNew^7 ", threshold);
+					//Com_Printf("%i ^1svNew^7 ", threshold);
 
 				}
 				else if (clFrameTime != cls.frametime)
 				{
 					CL_FindIncrementThreshold();
-					Com_Printf("%i ^1clNew^7 ", threshold);
+					//Com_Printf("%i ^1clNew^7 ", threshold);
 				}
 				//Com_Printf("threshold: %i\n", threshold);
 				
@@ -1425,31 +1420,25 @@ void CL_AdjustTimeDelta(void)
 					cl.serverTimeDelta++;
 					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3+1 ms^7";
-					if (cl_showTimeDelta->integer & 4) Com_Printf("^2(Δ +1 | %i)\n", cl.serverTimeDelta);
+					
+					if (cl_showTimeDelta->integer) adjustmentMessage = "^2(Δ +1";
 				}
 				else
 				{
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";
-					if (cl_showTimeDelta->integer & 4) Com_Printf("^3(NO Δ | %i)\n", cl.serverTimeDelta);
+					if (cl_showTimeDelta->integer) adjustmentMessage = "^3(NO Δ";
 				}
 			}
 		}
 		else
 		{
-			if (cl_showTimeDelta->integer & 1) adjustmentMessage = "DISABLED (TIMESCALE)";
+			if (cl_showTimeDelta->integer) adjustmentMessage = "^3(DISABLED";
 		}
 	}
 
-	if (cl_showTimeDelta->integer & 1)
+	if (cl_showTimeDelta->integer)
 	{
-		//int serverTime = cls.realtime + cl.serverTimeDelta - cl_timeNudge->integer;
-		int drift = cl.serverTimeDelta - cl.baselineDelta; // negative drift is expected
-		Com_Printf("^9drift:^7%4i   ^9deltaDelta:^7%4i   ^9serverTimeDelta:^7 %i   ^9adjustment:^7 %s\n", 
-			          drift,          deltaDelta,       cl.serverTimeDelta,          adjustmentMessage);
+		Com_Printf("%s | %i %i %i)\n", adjustmentMessage, drift, deltaDelta, cl.serverTimeDelta);
 	}
-
-	if (cl_showTimeDelta->integer & 2) Com_Printf("%i ", cl.serverTimeDelta);
 }
 
 /**
@@ -1465,10 +1454,8 @@ void CL_FirstSnapshot(void)
 	cls.state = CA_ACTIVE;
 
 	// set the timedelta so we are exactly on this first frame
-	cl.baselineDelta = cl.serverTimeDelta = cl.snap.serverTime - cls.realtime;
-	if (cl_showTimeDelta->integer & 1) Com_Printf("^2FIRST SNAPSHOT^7 (serverTimeDelta = % i)\n", cl.serverTimeDelta);
-	if (cl_showTimeDelta->integer & 2) Com_Printf("<SETUP> ");
-	if (cl_showTimeDelta->integer & 4) Com_Printf("^4(TARE | %i)\n", cl.serverTimeDelta);
+	cl.baselineDelta = cl.serverTimeDelta = cl.snap.serverTime - cls.realtime;	
+	if (cl_showTimeDelta->integer) Com_Printf("^4(FIRST SNAPSHOT | serverTimeDelta = %i)\n", cl.serverTimeDelta);
 
 	cl.oldServerTime   = cl.snap.serverTime;
 
@@ -1606,22 +1593,22 @@ void CL_SetCGameTime(void)
 			cl.extrapolatedSnapshot = qtrue;
 		}
 
-		if(cl_showTimeDelta->integer & 4) {
+		if(cl_showTimeDelta->integer) {
 			if (spareTime > cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^7"); // safe (white)
+				Com_Printf("^7"); // extra time to spare (white)
 			} 
 			else if (spareTime == cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^2"); // right on target (green)
+				Com_Printf("^2"); // right on time (green)
 			}
 			else if (spareTime >= 0)
 			{
-				Com_Printf("^3"); // eats into margin (yellow)
+				Com_Printf("^3"); // margin in use (yellow)
 			}
 			else
 			{
-				Com_Printf("^1"); // exceeded margin (red)
+				Com_Printf("^1"); // margin exhausted (red)
 			}
 
 			Com_Printf("%+03i ", spareTime);
@@ -1633,7 +1620,6 @@ void CL_SetCGameTime(void)
 	// make a huge adjustment
 	if (cl.newSnapshots)
 	{
-		//Com_Printf("%i-SNAP ", cls.realtime); //temp
 		CL_AdjustTimeDelta();
 	}
 
