@@ -1413,7 +1413,8 @@ void CL_AdjustTimeDelta(void)
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
 					(cl.snap.serverTime) //server time
-					- (cls.realtime + cl.serverTimeDelta + 1); //client time
+					- (cls.realtime + cl.serverTimeDelta + 1) //client time
+					- cl_extrapolationMargin->integer;
 
 				if( spareTime >= threshold)
 				{
