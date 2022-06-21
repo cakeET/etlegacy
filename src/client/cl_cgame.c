@@ -1438,7 +1438,8 @@ void CL_AdjustTimeDelta(void)
 	if (cl_showTimeDelta->integer)
 	{
 		int drift = cl.serverTimeDelta - cl.baselineDelta; // negative drift is expected
-		Com_Printf("%s | %i %i %i)\n", adjustmentMessage, drift, deltaDelta, cl.serverTimeDelta);
+		Com_Printf("%s | %i %i %i) ", adjustmentMessage, drift, deltaDelta, cl.serverTimeDelta);
+		if(cl_showTimeDelta->integer & 2) Com_Printf("\n");
 	}
 }
 
