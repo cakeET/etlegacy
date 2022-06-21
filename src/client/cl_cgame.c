@@ -1356,14 +1356,14 @@ void CL_AdjustTimeDelta(void)
 		cl.oldServerTime   = cl.snap.serverTime; // FIXME: is this a problem for cgame?
 		cl.serverTime      = cl.snap.serverTime;
 
-		if (cl_showTimeDelta->integer) adjustmentMessage = "^4(TARE";
+		if (cl_showTimeDelta->integer) adjustmentMessage = "^5(TARE";
 	}
 	else if (deltaDelta > 100)
 	{
 		// fast adjust, cut the difference in half
 		cl.serverTimeDelta = (cl.serverTimeDelta + newDelta) >> 1;
 
-		if (cl_showTimeDelta->integer) adjustmentMessage = "^4(HALF";
+		if (cl_showTimeDelta->integer) adjustmentMessage = "^5(HALF";
 	}
 	else
 	{
@@ -1421,7 +1421,7 @@ void CL_AdjustTimeDelta(void)
 					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
 					
-					if (cl_showTimeDelta->integer) adjustmentMessage = "^2(Δ +1";
+					if (cl_showTimeDelta->integer) adjustmentMessage = "^4(Δ +1";
 				}
 				else
 				{
@@ -1457,10 +1457,7 @@ void CL_FirstSnapshot(void)
 
 	// set the timedelta so we are exactly on this first frame
 	cl.baselineDelta = cl.serverTimeDelta = cl.snap.serverTime - cls.realtime;	
-	if (cl_showTimeDelta->integer) Com_Printf("^4(FIRST SNAPSHOT | serverTimeDelta = %i)\n", cl.serverTimeDelta);
-
 	cl.oldServerTime   = cl.snap.serverTime;
-
 	clc.demo.timeBaseTime = cl.snap.serverTime;
 
 	// if this is the first frame of active play,
@@ -1480,6 +1477,11 @@ void CL_FirstSnapshot(void)
 		DB_UpdateFavorite(cl_profile->string, cls.servername);
 	}
 #endif
+
+	if (cl_showTimeDelta->integer)
+	{
+		Com_Printf("^2(FIRST SNAPSHOT | serverTimeDelta = %i)\n", cl.serverTimeDelta);
+	}
 }
 
 /**
