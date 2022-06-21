@@ -1392,10 +1392,10 @@ void CL_AdjustTimeDelta(void)
 				int curr = cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime;
 				int prev = cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime;
 				int interval = curr - prev;
-				Com_Printf("interval new: %i", interval);
+				//Com_Printf("interval new: %i", interval);
 
-				int interval2 = cl.snap.serverTime - cl.oldFrameServerTime;
-				Com_Printf("interval old: %i", interval2);
+				//int interval2 = cl.snap.serverTime - cl.oldFrameServerTime;
+				//Com_Printf("interval old: %i", interval2);
 
 				if (threshold == -1 || svFrameTime != interval) {
 					svFrameTime = interval;
@@ -1408,7 +1408,7 @@ void CL_AdjustTimeDelta(void)
 					CL_FindIncrementThreshold();
 					Com_Printf("%i ^1clNew^7 ", threshold);
 				}
-				Com_Printf("threshold: %i\n", threshold);
+				//Com_Printf("threshold: %i\n", threshold);
 				
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
@@ -1428,8 +1428,6 @@ void CL_AdjustTimeDelta(void)
 				{
 					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "UNSAFE";	
 				}
-				
-				
 			}
 		}
 		else
@@ -1607,19 +1605,19 @@ void CL_SetCGameTime(void)
 		if(cl_showTimeDelta->integer & 4) {
 			if (spareTime > cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^7"); // white
+				Com_Printf("^7"); // safe (white)
 			} 
 			else if (spareTime == cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^2"); // green
+				Com_Printf("^2"); // right on target (green)
 			}
 			else if (spareTime >= 0)
 			{
-				Com_Printf("^3"); // yellow
+				Com_Printf("^3"); // eats into margin (yellow)
 			}
 			else
 			{
-				Com_Printf("^1"); // red
+				Com_Printf("^1"); // exceeded margin (red)
 			}
 
 			Com_Printf("%i ", spareTime);
