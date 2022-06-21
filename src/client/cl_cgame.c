@@ -1271,13 +1271,12 @@ void CL_FindIncrementThreshold()
 
 	if (svFrameTime < clFrameTime) // slow client on fast server
 	{
-		//sit about one server frame behind
-		threshold = svFrameTime - (clFrameTime % svFrameTime) - 1;
-		//threshold = (clFrameTime % svFrameTime) + 1;
+		threshold = (clFrameTime % svFrameTime);
+		int alt = svFrameTime - threshold;
+		threshold = threshold > alt ? threshold : alt;
 		Com_Printf("SV<CL ");
 		return;
 	}
-
 
     // calculate the least common muliple
     int LCM = svFrameTime;
