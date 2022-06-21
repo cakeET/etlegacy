@@ -1586,26 +1586,44 @@ void CL_SetCGameTime(void)
 
 		// note if we are almost past the latest frame (without timeNudge),
 		// so we will try and adjust back a bit when the next snapshot arrives
-		int a = cls.realtime + cl.serverTimeDelta;
-		int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
-		int missedby = a - b;
+		//int a = cls.realtime + cl.serverTimeDelta;
+		//int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
+		//int missedby = a - b;
 
-		if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
+		//int x = (cls.realtime + cl.serverTimeDelta) - 
+		//	    (cl.snap.serverTime - cl_extrapolationMargin->integer)
+
+		int spareTime =
+			cl.snap.serverTime                    //server
+			- (cls.realtime + cl.serverTimeDelta) //client
+			- cl_extrapolationMargin->integer;    //margin
+
+		//if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
+		if (spareTime <= 0)
 		{
 			cl.extrapolatedSnapshot = qtrue;
-			if (missedby == 0)
+		}
+
+		if(cl_showTimeDelta->integer & 4) {
+			if (spareTime > cl_extrapolationMargin->integer)
 			{
-				Com_Printf("^3E %i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
+				Com_Printf("^7"); // white
+			} 
+			else if (spareTime == cl_extrapolationMargin->integer)
+			{
+				Com_Printf("^2"); // green
+			}
+			else if (spareTime >= 0)
+			{
+				Com_Printf("^3"); // yellow
 			}
 			else
 			{
-				Com_Printf("^1E %i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
+				Com_Printf("^1"); // red
 			}
-		}
-		else
-		{
-			Com_Printf("I %i %i %i %i %i %i\n", missedby, cls.frametime, cls.realtime, cl.serverTimeDelta, cl.snap.serverTime, cl_extrapolationMargin->integer);
-		}		
+
+			Com_Printf("%i ", spareTime);
+		}	
 	}
 
 	// if we have gotten new snapshots, drift serverTimeDelta
