@@ -1342,6 +1342,7 @@ void CL_FindIncrementThreshold()
 }
 
 #define RESET_TIME  500
+#define HALVE_TIME  100
 
 /**
  * @brief Adjust the clients view of server time.
@@ -1363,7 +1364,7 @@ void CL_AdjustTimeDelta(void)
 {
 	int newDelta;
 	int deltaDelta;
-	char *adjustmentMessage;
+	char *deltaMessage;
 
 	cl.newSnapshots = qfalse;
 
@@ -1382,14 +1383,14 @@ void CL_AdjustTimeDelta(void)
 		cl.oldServerTime   = cl.snap.serverTime; // FIXME: is this a problem for cgame?
 		cl.serverTime      = cl.snap.serverTime;
 
-		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^5(TARE";
+		if (cl_showTimeDelta->integer) deltaMessage = "^1(reset";
 	}
-	else if (deltaDelta > 100)
+	else if (deltaDelta > HALVE_TIME)
 	{
 		// fast adjust, cut the difference in half
 		cl.serverTimeDelta = (cl.serverTimeDelta + newDelta) >> 1;
 
-		if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^5(HALF";
+		if (cl_showTimeDelta->integer) deltaMessage = "^1(halve";
 	}
 	else
 	{
@@ -1406,7 +1407,7 @@ void CL_AdjustTimeDelta(void)
 				cl.serverTimeDelta -= 2;
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
-				if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^1(Δ -2";
+				if (cl_showTimeDelta->integer) deltaMessage = "^6(-2 ms";
 			}
 			else
 			{
@@ -1447,25 +1448,24 @@ void CL_AdjustTimeDelta(void)
 					// set a cmd packet flag so the server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
 					
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^4(Δ +1";
+					if (cl_showTimeDelta->integer) deltaMessage = "^5(+1 ms";
 				}
 				else
 				{
-					if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3(NO Δ";
+					if (cl_showTimeDelta->integer) deltaMessage = "^7(none ";
 				}
 			}
 		}
 		else
 		{
-			if (cl_showTimeDelta->integer & 1) adjustmentMessage = "^3(DISABLED";
+			if (cl_showTimeDelta->integer) deltaMessage = "^9(disabled";
 		}
 	}
 
-	if (cl_showTimeDelta->integer & 1)
+	if (cl_showTimeDelta->integer)
 	{
-		int drift = cl.serverTimeDelta - cl.baselineDelta; // negative drift is expected
-		Com_Printf("%s | %i %i %i) ", adjustmentMessage, drift, deltaDelta, cl.serverTimeDelta);
-		if(cl_showTimeDelta->integer & 2) Com_Printf("\n");
+		int drift = cl.serverTimeDelta - cl.baselineDelta; // some negative drift is expected
+		Com_Printf("%s | %i %i %i)\n", deltaMessage, cl.serverTimeDelta, deltaDelta, drift);
 	}
 }
 
@@ -1504,9 +1504,9 @@ void CL_FirstSnapshot(void)
 	}
 #endif
 
-	if (cl_showTimeDelta->integer & 1)
+	if (cl_showTimeDelta->integer)
 	{
-		Com_Printf("^2(FIRST SNAPSHOT | serverTimeDelta = %i)\n", cl.serverTimeDelta);
+		Com_Printf("^2(first snapshot | serverTimeDelta = %i)\n", cl.serverTimeDelta);
 	}
 }
 
@@ -1623,30 +1623,34 @@ void CL_SetCGameTime(void)
 			cl.extrapolatedSnapshot = qtrue;
 		}
 
-		if(cl_showTimeDelta->integer & 1) {
+		if(cl_showTimeDelta->integer) {
+			char colorCode;
+
 			if (spareTime > cl_extrapolationMargin->integer)
 			{
-				if(!(cl_showTimeDelta->integer & 8))
-				{
-					Com_Printf("^7"); // extra time to spare (white)
-				}
+				colorCode = '7';
+				Com_Printf("^7"); // extra time to spare (white)
 			} 
 			else if (spareTime == cl_extrapolationMargin->integer)
 			{
+				colorCode = '2';
 				Com_Printf("^2"); // exactly on time (green)
 			}
 			else if (spareTime >= 0)
 			{
+				colorCode = '3';
 				Com_Printf("^3"); // margin in use (yellow)
 			}
 			else
 			{
+				colorCode = '1';
 				Com_Printf("^1"); // margin exhausted (red)
 			}	
 
-			if(!(cl_showTimeDelta->integer & 8))
+			// 2 prints every frame, not just the one right before the snapshot 
+			if(cl_showTimeDelta->integer & 2 || cl.newSnapshots) 
 			{
-				Com_Printf("%+03i ", spareTime);
+				Com_Printf("^%c%+03i ", colorCode, spareTime);
 			}
 		}	
 	}
