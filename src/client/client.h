@@ -802,6 +802,7 @@ void CL_UpdateLevelHunkUsage(void);
 void CL_CGameBinaryMessageReceived(const byte *buf, int buflen, int serverTime);
 qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot);
 qboolean CL_GetServerCommand(int serverCommandNumber);
+int CL_FindIncrementThreshold(void);
 void CL_AdjustTimeDelta(void);
 
 // cl_ui.c

@@ -1241,12 +1241,11 @@ qboolean CL_GameCommand(void)
 /**
  * @brief CL_CGameRendering
  */
-void CL_CGameRendering()
+void CL_CGameRendering(void)
 {
 	VM_Call(cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, 0, clc.demo.playing);
 	VM_Debug(0);
 }
-
 
 int threshold = -1;
 int svFrameTime;
@@ -1254,126 +1253,37 @@ int clFrameTime;
 
 /**
  * @brief CL_FindIncrementThreshold
+ * @return
  */
-void CL_FindIncrementThreshold()
+int CL_FindIncrementThreshold(void)
 {
 	clFrameTime = cls.frametime;
-	//Com_Printf("svFrameTime: %i ", svFrameTime);
 
-	if (clFrameTime == svFrameTime) // || clFrameTime % svFrameTime == 0
+	// calculates the least common muliple of clFrameTime and svFrameTime
+	// the LCM represents how long until the time over-run pattern repeats
+	int LCM = svFrameTime > clFrameTime ? svFrameTime : clFrameTime;
+	while (1)
 	{
-        // there is a enough new data whenever the client comes up for air
-		threshold = 0;
-		
-		if (cl_showTimeDelta->integer & 4) 
-		{
-			Com_Printf("(clFrameTime == svFrameTime | threshold = 0) ");
-		}
-
-		return;
-	}
-
-	if (svFrameTime < clFrameTime)
-	{
-		// slow client on fast server (eg. sv_fps 40, com_maxFPS 30)
-		// this doesn't handle all edge cases but works well enough
-		threshold = (clFrameTime % svFrameTime);
-		int alt = svFrameTime - threshold;
-		threshold = threshold > alt ? threshold : alt;
-		
-		if (cl_showTimeDelta->integer & 4)
-		{
-			Com_Printf("(svFrameTime < clFrameTime | threshold = %i) ", threshold);
-		}
-
-		return;
-	}
-
-    // calculate the least common muliple of clFrameTime and svFrameTime
-    // the LCM is how long until the spare time pattern repeats
-    int LCM = svFrameTime;
-    while (1)
-    {
-        if (LCM % clFrameTime == 0 && LCM % svFrameTime == 0) 
-        {
-            break;
-        }
-        ++LCM;
-    }
-
-    // loop down through possible thresholds to check for viability
-	threshold = svFrameTime - 1;
-	do
-	{
-		// to avoid running out of spare time we want a threshold
-		// that will periodically synchronize with clFrameTime
-		if(LCM % threshold == clFrameTime)
-		{
-	   		if (cl_showTimeDelta->integer & 4)
+		if (LCM % clFrameTime == 0 && LCM % svFrameTime == 0) 
 			{
-				Com_Printf("(LCM %% threshold == clFrameTime | threshold = %i) ", threshold);
-			}
-
-			return;
+			break;
 		}
-		--threshold;
-
-	} while (threshold > 0);
-
-    // sometimes search misses when clFrameTime is factor of svFrameTime
-	if (svFrameTime % clFrameTime == 0)
-    {
-		threshold = svFrameTime - clFrameTime;
-
-   		if (cl_showTimeDelta->integer & 4)
-		{
-			Com_Printf("(svFrameTime %% clFrameTime == 0 | threshold = %i) ", threshold);
-		}
-		return;
+		++LCM;
 	}
 
-    // otherwise, we just need a full client frame
-	threshold = clFrameTime;
-
-	if (cl_showTimeDelta->integer & 4)
+	int min = 0;
+	int clTime = 0;
+	// finds the worst amount of client over-run assuming no initial spare time
+	while(clTime <= LCM)
 	{
-		Com_Printf("(clFrameTime | threshold = %i) ", threshold);
+		int svTime  = (clTime / svFrameTime) * svFrameTime;
+		int spareTime = svTime - clTime;
+		if (spareTime < min) min = spareTime;
+
+		clTime += clFrameTime;
 	}
-}
 
-int CL_FindIncrementThreshold2()
-{
-	clFrameTime = cls.frametime;
-	
-    // calculate the least common muliple of clFrameTime and svFrameTime
-    // the LCM is how long until the spare time pattern repeats
-    int LCM = svFrameTime > clFrameTime ? svFrameTime : clFrameTime;
-    while (1)
-    {
-        if (LCM % clFrameTime == 0 && LCM % svFrameTime == 0) 
-        {
-            break;
-        }
-        ++LCM;
-    }
-    //printf("LCM: %i\n", LCM);
-
-    // new looping search approach
-    //printf("svT clT spT min\n");
-    int clTime = 0;
-    int min = 0;
-    while(clTime <= LCM)
-    {
-        // start with no spare time svTime = 0 at clTime = 0
-        int svTime  = (clTime / svFrameTime) * svFrameTime;
-        int spareTime = svTime - clTime;
-        if (spareTime < min) min = spareTime;
-        //printf("%3i %3i %3i %3i\n", svTime, clTime, spareTime, min);
-        
-        clTime += clFrameTime;
-    }
- 
-    return abs(min);
+	return abs(min);
 }
 
 #define RESET_TIME  500
@@ -1440,34 +1350,33 @@ void CL_AdjustTimeDelta(void)
 			{
 				cl.extrapolatedSnapshot = qfalse;
 				cl.serverTimeDelta -= 2;
+				// set a cmd packet flag so server is aware of delta decrease
 				cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_BACKWARD;
 
 				if (cl_showTimeDelta->integer) deltaMessage = "^6(-2 ms";
 			}
 			else
 			{
-				// new interval between server time
-				int svOldFrameTime = svFrameTime;				
+				int svOldFrameTime = svFrameTime;
+				// must be done this way to avoid incorrect svFrameTime when on a slow client
 				svFrameTime = (cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime)
 							- (cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime);
-				
-				// find new threshold if not set or client/server frametime has changed
+
+				// find the new threshold if not set or client/server frametime has changed
 				if (threshold == -1 || svFrameTime != svOldFrameTime || clFrameTime != cls.frametime) {
-					threshold = CL_FindIncrementThreshold2();
+					threshold = CL_FindIncrementThreshold();
 				}
-				//Com_Printf("threshold: %i\n", threshold);
-				
-				//how much spare time do we have if we were to roll time forward 1ms?
+
 				int spareTime =
-					(cl.snap.serverTime) //server time
-					- (cls.realtime + cl.serverTimeDelta) //client time
-					- cl_extrapolationMargin->integer;
+					cl.snap.serverTime                    // server time
+					- (cls.realtime + cl.serverTimeDelta) // client time
+					- cl_extrapolationMargin->integer;    // margin time
 
 				if( spareTime > threshold)
 				{
 					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
-					// set a cmd packet flag so the server is aware of delta increment
+					// set a cmd packet flag so server is aware of delta increment
 					cl.cgameFlags |= MASK_CGAMEFLAGS_SERVERTIMEDELTA_FORWARD;
 					
 					if (cl_showTimeDelta->integer) deltaMessage = "^5(+1 ms";
@@ -1487,7 +1396,9 @@ void CL_AdjustTimeDelta(void)
 	if (cl_showTimeDelta->integer)
 	{
 		int drift = cl.serverTimeDelta - cl.baselineDelta; // some negative drift is expected
-		Com_Printf("%s | %i %i %i)\n", deltaMessage, cl.serverTimeDelta, deltaDelta, drift);
+		char terminator = (cl_showTimeDelta->integer & 4) ? '\n' : ' ';
+
+		Com_Printf("%s | %i %i %i)%c", deltaMessage, cl.serverTimeDelta, deltaDelta, drift, terminator);
 	}
 }
 
@@ -1592,7 +1503,7 @@ void CL_SetCGameTime(void)
 			Com_Error(ERR_DROP, "cl.snap.serverTime < cl.oldFrameServerTime");
 		}
 	}
-	//cl.oldFrameServerTime = cl.snap.serverTime;
+	cl.oldFrameServerTime = cl.snap.serverTime;
 
 
 	// get our current view of time
@@ -1684,9 +1595,6 @@ void CL_SetCGameTime(void)
 	{
 		CL_AdjustTimeDelta();
 	}
-
-	//moved down here so that cl.oldFrameServerTime will be available in CL_AdjustTimeDelta();
-	cl.oldFrameServerTime = cl.snap.serverTime;
 
 	if (clc.demo.playing)
 	{
