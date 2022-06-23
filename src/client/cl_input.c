@@ -1046,7 +1046,7 @@ void CL_FinishMove(usercmd_t *cmd)
 	}
 }
 
-#define MASK_CGAMEFLAGS_SERVERTIMEDELTA 0b00000110
+#define MASK_CGAMEFLAGS_SERVERTIMEDELTA 0x6 // 0b00000110
 
 /**
  * @brief CL_CreateCmd
