@@ -1457,13 +1457,13 @@ void CL_AdjustTimeDelta(void)
 
 				if (threshold == -1 || svFrameTime != interval) {
 					svFrameTime = interval;
-					CL_FindIncrementThreshold();
+					CL_FindIncrementThreshold2();
 					//Com_Printf("%i ^1svNew^7 ", threshold);
 
 				}
 				else if (clFrameTime != cls.frametime)
 				{
-					CL_FindIncrementThreshold();
+					CL_FindIncrementThreshold2();
 					//Com_Printf("%i ^1clNew^7 ", threshold);
 				}
 				//Com_Printf("threshold: %i\n", threshold);
