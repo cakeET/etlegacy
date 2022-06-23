@@ -1341,6 +1341,39 @@ void CL_FindIncrementThreshold()
 	}
 }
 
+int CL_FindIncrementThreshold2()
+{
+    // calculate the least common muliple of clFrameTime and svFrameTime
+    // the LCM is how long until the spare time pattern repeats
+    int LCM = svFrameTime > clFrameTime ? svFrameTime : clFrameTime;
+    while (1)
+    {
+        if (LCM % clFrameTime == 0 && LCM % svFrameTime == 0) 
+        {
+            break;
+        }
+        ++LCM;
+    }
+    //printf("LCM: %i\n", LCM);
+
+    // new looping search approach
+    //printf("svT clT spT min\n");
+    int clTime = 0;
+    int min = 0;
+    while(clTime <= LCM)
+    {
+        // start with no spare time svTime = 0 at clTime = 0
+        int svTime  = (clTime / svFrameTime) * svFrameTime;
+        int spareTime = svTime - clTime;
+        if (spareTime < min) min = spareTime;
+        //printf("%3i %3i %3i %3i\n", svTime, clTime, spareTime, min);
+        
+        clTime += clFrameTime;
+    }
+ 
+    return abs(min);
+}
+
 #define RESET_TIME  500
 #define HALVE_TIME  100
 
