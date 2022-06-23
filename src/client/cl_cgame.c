@@ -1343,6 +1343,8 @@ void CL_FindIncrementThreshold()
 
 int CL_FindIncrementThreshold2()
 {
+	clFrameTime = cls.frametime;
+	
     // calculate the least common muliple of clFrameTime and svFrameTime
     // the LCM is how long until the spare time pattern repeats
     int LCM = svFrameTime > clFrameTime ? svFrameTime : clFrameTime;
