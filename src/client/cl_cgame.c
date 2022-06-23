@@ -1444,37 +1444,24 @@ void CL_AdjustTimeDelta(void)
 			}
 			else
 			{
-				// find threshold if never set or client/server frametime has changed
-
-				// new interval
-				int curr = cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime;
-				int prev = cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime;
-				int interval = curr - prev;
-				//Com_Printf("interval new: %i", interval);
-
-				//int interval2 = cl.snap.serverTime - cl.oldFrameServerTime;
-				//Com_Printf("interval old: %i", interval2);
-
-				if (threshold == -1 || svFrameTime != interval) {
-					svFrameTime = interval;
-					CL_FindIncrementThreshold2();
-					//Com_Printf("%i ^1svNew^7 ", threshold);
-
-				}
-				else if (clFrameTime != cls.frametime)
-				{
-					CL_FindIncrementThreshold2();
-					//Com_Printf("%i ^1clNew^7 ", threshold);
+				// new interval between server time
+				int svOldFrameTime = svFrameTime;				
+				svFrameTime = (cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime)
+							- (cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime);
+				
+				// find new threshold if not set or client/server frametime has changed
+				if (threshold == -1 || svFrameTime != svOldFrameTime || clFrameTime != cls.frametime) {
+					threshold = CL_FindIncrementThreshold2();
 				}
 				//Com_Printf("threshold: %i\n", threshold);
 				
 				//how much spare time do we have if we were to roll time forward 1ms?
 				int spareTime =
 					(cl.snap.serverTime) //server time
-					- (cls.realtime + cl.serverTimeDelta + 1) //client time
+					- (cls.realtime + cl.serverTimeDelta) //client time
 					- cl_extrapolationMargin->integer;
 
-				if( spareTime >= threshold)
+				if( spareTime > threshold)
 				{
 					// move our sense of time forward to minimize total latency
 					cl.serverTimeDelta++;
