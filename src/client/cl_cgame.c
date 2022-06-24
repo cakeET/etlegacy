@@ -1540,17 +1540,11 @@ void CL_SetCGameTime(void)
 
 		// note if we are almost past the latest frame (without timeNudge),
 		// so we will try and adjust back a bit when the next snapshot arrives
-		//int a = cls.realtime + cl.serverTimeDelta;
-		//int b = cl.snap.serverTime - cl_extrapolationMargin->integer;
-		//int missedby = a - b;
-
-		//int x = (cls.realtime + cl.serverTimeDelta) - 
-		//	    (cl.snap.serverTime - cl_extrapolationMargin->integer)
 
 		int spareTime =
 			cl.snap.serverTime                     //server
 			- (cls.realtime + cl.serverTimeDelta); //client
-		//if (cls.realtime + cl.serverTimeDelta >= cl.snap.serverTime - cl_extrapolationMargin->integer)
+
 		if (spareTime <= cl_extrapolationMargin->integer)
 		{
 			cl.extrapolatedSnapshot = qtrue;
@@ -1561,26 +1555,21 @@ void CL_SetCGameTime(void)
 
 			if (spareTime > cl_extrapolationMargin->integer)
 			{
-				colorCode = '7';
-				Com_Printf("^7"); // extra time to spare (white)
+				colorCode = '7'; // excess time to spare (white)
 			} 
 			else if (spareTime == cl_extrapolationMargin->integer)
 			{
-				colorCode = '2';
-				Com_Printf("^2"); // exactly on time (green)
+				colorCode = '2'; // exactly on target (green)
 			}
 			else if (spareTime >= 0)
 			{
-				colorCode = '3';
-				Com_Printf("^3"); // margin in use (yellow)
+				colorCode = '3'; // margin in use (yellow)
 			}
 			else
 			{
-				colorCode = '1';
-				Com_Printf("^1"); // margin exhausted (red)
+				colorCode = '1'; // margin exhausted (red)
 			}	
 
-			// 2 prints every frame, not just the one right before the snapshot 
 			if(cl_showTimeDelta->integer & 2 || cl.newSnapshots) 
 			{
 				Com_Printf("^%c%+03i ", colorCode, spareTime);
