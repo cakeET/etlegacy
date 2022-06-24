@@ -1398,7 +1398,7 @@ void CL_AdjustTimeDelta(void)
 		int drift = cl.serverTimeDelta - cl.baselineDelta; // some negative drift is expected
 		char terminator = (cl_showTimeDelta->integer & 4) ? '\n' : ' ';
 
-		Com_Printf("%s | %i %i %i)%c", deltaMessage, cl.serverTimeDelta, deltaDelta, drift, terminator);
+		Com_Printf("%s | %i %i %i %i)%c", deltaMessage, cl.serverTimeDelta, deltaDelta, drift, threshold, terminator);
 	}
 }
 
