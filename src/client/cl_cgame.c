@@ -1288,6 +1288,7 @@ int CL_FindIncrementThreshold(void)
 
 #define RESET_TIME  500
 #define HALVE_TIME  100
+extern cvar_t *sv_fps;
 
 /**
  * @brief Adjust the clients view of server time.
@@ -1361,7 +1362,7 @@ void CL_AdjustTimeDelta(void)
 
 				if (com_sv_running->integer)
 				{
-					svFrameTime = 1000 / sv_fps;
+					svFrameTime = 1000 / sv_fps->integer;
 				}
 				else
 				{
