@@ -1358,10 +1358,18 @@ void CL_AdjustTimeDelta(void)
 			else
 			{
 				int svOldFrameTime = svFrameTime;
-				// must be done this way to avoid incorrect svFrameTime when on a slow client
-				svFrameTime = (cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime)
-							- (cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime);
 
+				if (com_sv_running->integer)
+				{
+					svFrameTime = 1000 / sv_fps;
+				}
+				else
+				{
+					// must be done this way to avoid incorrect svFrameTime when on a slow client
+					svFrameTime = (cl.snapshots[(cl.snap.messageNum - 0) & PACKET_MASK].serverTime)
+								- (cl.snapshots[(cl.snap.messageNum - 1) & PACKET_MASK].serverTime);
+				}
+				
 				// find the new threshold if not set or client/server frametime has changed
 				if (threshold == -1 || svFrameTime != svOldFrameTime || clFrameTime != cls.frametime) {
 					threshold = CL_FindIncrementThreshold();
