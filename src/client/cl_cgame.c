@@ -1253,13 +1253,16 @@ int clFrameTime;
 
 /**
  * @brief CL_FindIncrementThreshold
+ * @details Calculates the threshold used when deciding whether to roll time forward.
+ * 			The threshold ensures the client won't encroach on the margin specified by
+ * 			cl_extrapolationMargin because of non-synchronous client/server frame rates.
  * @return
  */
 int CL_FindIncrementThreshold(void)
 {
 	clFrameTime = cls.frametime;
 
-	// calculates the least common muliple of clFrameTime and svFrameTime
+	// calculates the least common multiple of clFrameTime and svFrameTime
 	// the LCM represents how long until the time over-run pattern repeats
 	int LCM = svFrameTime > clFrameTime ? svFrameTime : clFrameTime;
 	while (1)
@@ -1288,6 +1291,7 @@ int CL_FindIncrementThreshold(void)
 
 #define RESET_TIME  500
 #define HALVE_TIME  100
+
 extern cvar_t *sv_fps;
 
 /**
@@ -1392,7 +1396,7 @@ void CL_AdjustTimeDelta(void)
 				}
 				else
 				{
-					if (cl_showTimeDelta->integer) deltaMessage = "^7(none ";
+					if (cl_showTimeDelta->integer) deltaMessage = "^o(none";
 				}
 			}
 		}
@@ -1407,7 +1411,7 @@ void CL_AdjustTimeDelta(void)
 		int drift = cl.serverTimeDelta - cl.baselineDelta; // some negative drift is expected
 		char terminator = (cl_showTimeDelta->integer & 4) ? '\n' : ' ';
 
-		Com_Printf("%s | %i %i %i %i)%c", deltaMessage, cl.serverTimeDelta, deltaDelta, drift, threshold, terminator);
+		Com_Printf("%s | %i %i %i)%c", deltaMessage, cl.serverTimeDelta, deltaDelta, drift, terminator);
 	}
 }
 
